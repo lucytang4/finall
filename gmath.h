@@ -4,5 +4,6 @@
 #include "matrix.h"
 
 double *calculate_normal(struct matrix *polygons, int i);
+double *normalize(double *vector);
 
 #endif

@@ -25,3 +25,11 @@ double *calculate_normal(struct matrix *polygons, int i) {
     
   return N;
 }
+
+double *normalize(double *vector){
+  double magnitude = pow(pow(vector[0],2)+pow(vector[1],2)+pow(vector[2],2),0.5);
+  vector[0]/=magnitude;
+  vector[1]/=magnitude;
+  vector[2]/=magnitude;
+  return vector;
+}
