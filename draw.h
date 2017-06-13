@@ -4,6 +4,9 @@
 #include "matrix.h"
 #include "ml6.h"
 
+int find_bot(struct matrix *points, int index);
+int find_mid(struct matrix *points,int index, int bot_index, int top_index);
+int find_top(struct matrix *points, int index);
 void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color c );
 
 //polygon organization

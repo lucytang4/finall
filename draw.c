@@ -15,62 +15,37 @@ int find_bot( struct matrix * points, int index){
     bot_index = index+1;
   if (points->m[1][index+2] < points->m[1][bot_index])
     bot_index = index+2;
-  //printf("bot_index = %d\n",bot_index);
+  //printf("bot_index = %d\tpoints->m[1][%d] = %f\n",bot_index,bot_index,points->m[1][bot_index]);
   return bot_index;
 }
-/*
+
 int find_mid( struct matrix * points, int index, int bot_index, int top_index){
-  int mid_index;
   int bot_ctr = 0;
   int top_ctr = 0;
   int i = index;
   while (i < index+3){
     if (i == bot_index){
-      if (bot_ctr == 1){
-	mid_index = i;
-	break;
+      if (bot_ctr == 2){
+        //printf("mid_index = %d\tpoints->m[1][%d] = %f\n",i,i,points->m[1][i]);
+	return i;
       }
       bot_ctr++;
       i++;
     }
     else if (i == top_index){
-      if (top_ctr == 1){
-	mid_index = i;
-	break;
+      if (top_ctr == 2){
+        //printf("mid_index = %d\tpoints->m[1][%d] = %f\n",i,i,points->m[1][i]);
+        return i;
       }
       top_ctr++;
       i++;
     }
-    else
-      mid_index = i;
+    else{
+      //printf("mid_index = %d\tpoints->m[1][%d] = %f\n",i,i,points->m[1][i]);
+      return i;
+    }
   }
-  //printf("mid_index = %d\n",mid_index);
-  return mid_index;
-  }*/
-
-int find_mid( struct matrix * points, int index, int bot_index){
-  int mid_index;
-  if (bot_index == index){
-    if (points->m[1][index+1] <= points->m[1][index+2])
-      mid_index = index+1;
-    else
-      mid_index = index+2;
-  }
-  else if (bot_index == index+1){
-    if (points->m[1][index] <= points->m[1][index+2])
-      mid_index = index;
-    else
-      mid_index = index+2;
-  }
-  else if (bot_index == index+2){
-    if (points->m[1][index] <= points->m[1][index+1])
-      mid_index = index;
-    else
-      mid_index = index+1;
-  }
-  //printf("mid_index = %d\n",mid_index);
-  return mid_index;
-  }
+}
 
 int find_top( struct matrix *points, int index){
   int top_index = index;
@@ -78,9 +53,17 @@ int find_top( struct matrix *points, int index){
     top_index = index+1;
   if (points->m[1][index+2] > points->m[1][top_index])
     top_index = index+2;
-  //printf("top_index = %d\n",top_index);
+  //printf("top_index = %d\tpoints->m[1][%d] = %f\n",top_index,top_index,points->m[1][top_index]);
   return top_index;
 }
+
+void make_ambient(color c, double constant){
+  c.red*=constant;
+  c.green*=constant;
+  c.blue*=constant;
+}
+
+
 
 void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color c ) {
   double x0,x1;
@@ -91,12 +74,9 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color
   double dz0,dz1;
   double dz1_2 = 0;
   int bot_index,mid_index,top_index;
-  //printf("points->m[1][%d] = %f\n",i,points->m[1][i]);
-  //printf("points->m[1][%d] = %f\n",i+1,points->m[1][i+1]);
-  //printf("points->m[1][%d] = %f\n",i+2,points->m[1][i+2]);
   bot_index = find_bot(points,i);
   top_index = find_top(points,i);
-  mid_index = find_mid(points,i,bot_index);
+  mid_index = find_mid(points,i,bot_index,top_index);
   
   x0 = points->m[0][bot_index];
   x1 = x0;
@@ -105,47 +85,53 @@ void scanline_convert( struct matrix *points, int i, screen s, zbuffer zb, color
   Ty = points->m[1][top_index];
   z0 = points->m[2][bot_index];
   z1 = z0;
-  dx0 = (points->m[0][top_index] - x0)/(points->m[1][top_index] - points->m[1][bot_index]);
-  dz0 = (points->m[2][top_index] - z0)/(points->m[1][top_index] - points->m[1][bot_index]);
-  
-  if (points->m[1][bot_index] == points->m[1][mid_index]){ //horizontal line between bot and mid
-    dx1 = (points->m[0][top_index] - points->m[0][mid_index])/(points->m[1][top_index] - points->m[1][mid_index]);
-    dz1 = (points->m[2][top_index] - points->m[2][mid_index])/(points->m[1][top_index] - points->m[1][mid_index]);
-  }
-  else if (points->m[1][top_index] == points->m[1][mid_index]){ //horizontal line between top and mid
-    dx1 = (points->m[0][mid_index] - points->m[0][bot_index])/(points->m[1][mid_index] - points->m[1][bot_index]);
-    dz1 = (points->m[2][mid_index] - points->m[2][bot_index])/(points->m[1][mid_index] - points->m[1][bot_index]);
-  }
+
+  c.red = i*10%256;
+  c.green = i*20%256;
+  c.blue = i*30%256;
+
+  if (points->m[1][top_index] == points->m[1][bot_index])
+    dx0 = dz0 = 0;
   else{
-    dx1 = (points->m[0][mid_index] - points->m[0][bot_index])/(points->m[1][mid_index] - points->m[1][bot_index]);
-    dx1_2 = (points->m[0][top_index] - points->m[0][mid_index])/(points->m[1][top_index] - points->m[1][mid_index]);
-    dz1 = (points->m[2][mid_index] - points->m[2][bot_index])/(points->m[1][mid_index] - points->m[1][bot_index]);
-    dz1_2 = (points->m[2][top_index] - points->m[2][mid_index])/(points->m[1][top_index] - points->m[1][mid_index]);
+    dx0 = (points->m[0][top_index] - x0)/(points->m[1][top_index] - points->m[1][bot_index]);
+    dz0 = (points->m[2][top_index] - z0)/(points->m[1][top_index] - points->m[1][bot_index]);
   }
+
+  if ( points->m[1][mid_index] - points->m[1][bot_index] == 0 ) {
+    dx1 = dz1 = 0;
+  }
+  else {
+    dx1 = (points->m[0][mid_index] - points->m[0][bot_index]) / (points->m[1][mid_index] - points->m[1][bot_index]);
+    dz1 = (points->m[2][mid_index] - points->m[2][bot_index]) / (points->m[1][mid_index] - points->m[1][bot_index]);
+  }
+
+  for(; By < points->m[1][mid_index]; By++ ) {
+    draw_line(x0, By, z0, x1, By, z1, s, zb, c); 
+    x0 += dx0;
+    x1 += dx1;
+    z0 += dz0;
+    z1 += dz1;
+  }
+
   
-  for (; By <= Ty; By++){
-    c.green = i*10%256;
-    c.red = i*20&256;
-    c.blue = i*30%256;
-    draw_line(x0,By,z0,x1,By,z1,s,zb,c);
-    x0+=dx0;
-    z0+=dz0;
-    if (dx1_2 == 0 && dz1_2 == 0){
-      x1+=dx1;
-      z1+=dz1;
-    }
-    else{
-      if (By <= My){
-	x1+=dx1;
-	z1+=dz1;
-      }
-      else if (By > My){
-	x1+=dx1_2;
-	z1+=dz1_2;
-      }
-    }
-  } 
-  
+  if ( points->m[1][top_index] - points->m[1][mid_index] == 0 ) {
+    dx1 = dz1 = 0;
+  }
+  else {
+    dx1 = (points->m[0][top_index] - points->m[0][mid_index]) / (points->m[1][top_index] - points->m[1][mid_index]);
+    dz1 = (points->m[2][top_index] - points->m[2][mid_index]) / (points->m[1][top_index] - points->m[1][mid_index]);
+  }
+
+  x1 = points->m[0][mid_index];
+  z1 = points->m[2][mid_index];
+
+  for(; By < Ty; By++ ) {
+    draw_line(x0, By, z0, x1, By, z1, s, zb, c);
+    x0 += dx0;
+    x1 += dx1;
+    z0 += dz0;
+    z1 += dz1;
+  }
 }//end scanline_convert
 
 

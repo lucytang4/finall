@@ -258,6 +258,7 @@ void my_main() {
   double step = 0.1;
   double theta;
   double knob_value, xval, yval, zval;
+  //SYMTAB symtab;
   
   g.red = 0;
   g.green = 0;
@@ -298,6 +299,13 @@ void my_main() {
 	    if ( symtab[j].type == SYM_VALUE )
 	      symtab[j].s.value = op[i].op.setknobs.value;
 	  break;
+	  /*
+	case AMBIENT:
+	  g.red = op[i].op.ambient.c[0];
+	  g.green = op[i].op.ambient.c[1];
+	  g.blue = op[i].op.ambient.c[2];
+	  make_ambient(g,0.5);
+	  break;*/
 	  
 	case SPHERE:
 	  /* printf("Sphere: %6.2f %6.2f %6.2f r=%6.2f", */
