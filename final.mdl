@@ -1,0 +1,26 @@
+frames 100
+basename final
+push
+//rotate x 45
+rotate y 70
+rotate z 45
+move 400 -600 0
+torus 250 250 0 25 150
+pop
+push
+//move 250 250 0
+//scale 2 2 2 bigenator
+rotate x 360 spin1
+rotate y 360 spin2
+torus 250 250 0 50 25
+push
+sphere 200 200 0 40
+sphere 300 200 0 40
+sphere 300 300 0 40
+sphere 200 300 0 40
+//vary bigenator 0 49 0 1
+//vary bigenator 50 99 1 0
+vary spin1 0 99 0 1
+vary spin2 0 99 0 1
+
+
